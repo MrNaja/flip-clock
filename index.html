@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极简翻页时钟</title>
+    <link rel="stylesheet" href="css/flip.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <div id="clock-container">
+        <div id="clock" class="tick" data-did-init="handleTickInit">
+            <div data-repeat="true">
+                <span data-view="flip"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="mode-toggle" class="control-button">切换背景</button>
+        <button id="fullscreen-toggle" class="control-button">全屏显示</button>
+    </div>
+    
+    <script src="js/flip.min.js"></script>
+
+    <script>
+        // 核心 JavaScript 逻辑
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+            const clockContainer = document.getElementById('clock-container');
+            const modeToggle = document.getElementById('mode-toggle');
+            const fullscreenToggle = document.getElementById('fullscreen-toggle');
+            let currentSizeIndex = 1; // 0:小, 1:中(默认), 2:大
+            const sizeValues = ['5vw', '8vw', '12vw']; // 时钟大小配置
+
+            // 1. 初始化时钟
+            // 使用 data-did-init="handleTickInit" 在 Tick 完成初始化后调用此函数
+            window.handleTickInit = function(tick) {
+                // 设置时钟为当前时间
+                tick.value = new Date();
+
+                // 告诉 Tick 每秒更新一次
+                Tick.DOM.update(tick, function() {
+                    return Tick.helper.date.toString(new Date());
+                }, 1000);
+            };
+
+            // 2. 背景模式切换
+            modeToggle.addEventListener('click', () => {
+                if (body.classList.contains('dark-mode')) {
+                    body.classList.replace('dark-mode', 'light-mode');
+                } else {
+                    body.classList.replace('light-mode', 'dark-mode');
+                }
+            });
+
+            // 3. 时钟大小调整 (通过点击时钟容器实现)
+            clockContainer.addEventListener('click', () => {
+                currentSizeIndex = (currentSizeIndex + 1) % sizeValues.length;
+                clockContainer.style.setProperty('--clock-font-size', sizeValues[currentSizeIndex]);
+            });
+
+            // 4. 全屏切换
+            fullscreenToggle.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    // 进入全屏
+                    document.documentElement.requestFullscreen().catch(err => {
+                        alert(`无法进入全屏模式: ${err.message} (${err.name})`);
+                    });
+                } else {
+                    // 退出全屏
+                    document.exitFullscreen();
+                }
+            });
+
+            // 监听全屏状态变化，更新按钮文本
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenToggle.textContent = '退出全屏';
+                } else {
+                    fullscreenToggle.textContent = '全屏显示';
+                }
+            });
+
+            // 初始化时钟大小
+            clockContainer.style.setProperty('--clock-font-size', sizeValues[currentSizeIndex]);
+
+        });
+    </script>
+</body>
+</html>
